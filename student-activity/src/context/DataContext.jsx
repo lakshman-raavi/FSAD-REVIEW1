@@ -107,6 +107,7 @@ export const DataProvider = ({ children }) => {
 
         const updatedRegs = act.registrations.map(reg => ({
             ...reg,
+            studentName: reg.studentName || reg.name, // Normalize to studentName
             attended: attendanceMap[reg.studentId] ?? false,
             points: (attendanceMap[reg.studentId] ?? false) ? act.defaultPoints : 0,
         }));

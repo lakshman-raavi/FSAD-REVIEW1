@@ -153,10 +153,10 @@ const AttendanceManager = () => {
                                 onClick={() => toggle(reg.studentId)}
                             >
                                 <div className="avatar" style={{ width: 36, height: 36, fontSize: '0.8rem', flexShrink: 0 }}>
-                                    {reg.studentName[0]}
+                                    {(reg.studentName || reg.name || 'S')[0]}
                                 </div>
                                 <div style={{ flex: 1 }}>
-                                    <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{reg.studentName}</div>
+                                    <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{reg.studentName || reg.name}</div>
                                     <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>{reg.studentId}</div>
                                 </div>
                                 {activity.attendanceLocked ? (
