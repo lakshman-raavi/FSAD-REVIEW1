@@ -100,8 +100,7 @@ export const DataProvider = ({ children }) => {
     }, [activities]);
 
     const finalizeAttendance = useCallback(async (activityId, attendanceMap) => {
-        const acts = await getActivities();
-        const act = acts.find(a => a.id === activityId);
+        const act = activities.find(a => a.id === activityId);
         if (!act) return { success: false, error: 'Event not found' };
         if (act.attendanceLocked) return { success: false, error: 'Attendance already locked' };
 
@@ -111,6 +110,9 @@ export const DataProvider = ({ children }) => {
             attended: attendanceMap[reg.studentId] ?? false,
             points: (attendanceMap[reg.studentId] ?? false) ? act.defaultPoints : 0,
         }));
+
+        // Optimistic update
+        setActivitiesState(prev => prev.map(a => a.id === activityId ? { ...a, registrations: updatedRegs, attendanceLocked: true } : a));
 
         await updateActivity(activityId, { registrations: updatedRegs, attendanceLocked: true });
 
@@ -127,18 +129,20 @@ export const DataProvider = ({ children }) => {
 
         await refreshActivities();
         return { success: true };
-    }, [refreshActivities]);
+    }, [activities, refreshActivities]);
 
     const reopenAttendance = useCallback(async (activityId) => {
-        const acts = await getActivities();
-        const act = acts.find(a => a.id === activityId);
+        const act = activities.find(a => a.id === activityId);
         if (!act) return { success: false, error: 'Event not found' };
 
         const updatedRegs = act.registrations.map(r => ({ ...r, attended: false, points: 0 }));
+
+        // Optimistic update
+        setActivitiesState(prev => prev.map(a => a.id === activityId ? { ...a, registrations: updatedRegs, attendanceLocked: false } : a));
+
         await updateActivity(activityId, { registrations: updatedRegs, attendanceLocked: false });
-        await refreshActivities();
         return { success: true };
-    }, [refreshActivities]);
+    }, [activities]);
 
     return (
         <DataContext.Provider value={{
