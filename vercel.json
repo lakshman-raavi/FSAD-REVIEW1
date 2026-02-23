@@ -10,8 +10,12 @@
             "destination": "/student-activity/dist/assets/$1"
         },
         {
-            "source": "/(.*)",
+            "source": "/((?!api|assets|.*\\.[^/]+)$)",
             "destination": "/student-activity/dist/index.html"
+        },
+        {
+            "source": "/(.*)",
+            "destination": "/student-activity/dist/$1"
         }
     ]
 }
