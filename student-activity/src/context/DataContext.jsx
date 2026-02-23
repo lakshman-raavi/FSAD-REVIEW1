@@ -54,43 +54,50 @@ export const DataProvider = ({ children }) => {
     }, [refreshActivities]);
 
     const registerForActivity = useCallback(async (activityId, student) => {
-        const acts = await getActivities();
-        const act = acts.find(a => a.id === activityId);
+        const act = activities.find(a => a.id === activityId);
         if (!act) return { success: false, error: 'Event not found' };
         if (act.attendanceLocked) return { success: false, error: 'Registration closed — attendance already finalized' };
         if (act.registrations.find(r => r.studentId === student.studentId))
             return { success: false, error: 'Already registered for this event' };
 
-        const updated = await updateActivity(activityId, {
-            registrations: [...act.registrations, {
-                studentId: student.studentId,
-                studentName: student.name,
-                attended: false,
-                points: 0,
-            }],
-        });
+        const newReg = {
+            studentId: student.studentId,
+            studentName: student.name,
+            attended: false,
+            points: 0,
+        };
+
+        const updatedRegs = [...act.registrations, newReg];
+
+        // Optimistic update
+        setActivitiesState(prev => prev.map(a => a.id === activityId ? { ...a, registrations: updatedRegs } : a));
+
+        const updated = await updateActivity(activityId, { registrations: updatedRegs });
+
         addNotification(student.studentId, {
             type: 'registration',
             message: `You've successfully registered for "${act.name}" on ${act.date}.`,
             activityId,
             activityName: act.name,
         });
-        await refreshActivities();
+
         return { success: true, activity: updated };
-    }, [refreshActivities]);
+    }, [activities]);
 
     const unregister = useCallback(async (activityId, studentId) => {
-        const acts = await getActivities();
-        const act = acts.find(a => a.id === activityId);
+        const act = activities.find(a => a.id === activityId);
         if (!act) return { success: false, error: 'Event not found' };
         if (act.attendanceLocked) return { success: false, error: 'Cannot unregister after attendance is finalized' };
 
-        const updated = await updateActivity(activityId, {
-            registrations: act.registrations.filter(r => r.studentId !== studentId),
-        });
-        await refreshActivities();
+        const updatedRegs = act.registrations.filter(r => r.studentId !== studentId);
+
+        // Optimistic update
+        setActivitiesState(prev => prev.map(a => a.id === activityId ? { ...a, registrations: updatedRegs } : a));
+
+        const updated = await updateActivity(activityId, { registrations: updatedRegs });
+
         return { success: true, activity: updated };
-    }, [refreshActivities]);
+    }, [activities]);
 
     const finalizeAttendance = useCallback(async (activityId, attendanceMap) => {
         const acts = await getActivities();
