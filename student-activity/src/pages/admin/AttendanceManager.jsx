@@ -50,9 +50,11 @@ const AttendanceManager = () => {
     };
 
     const handleFinalize = async () => {
+        setConfirmFinalize(false);
         const result = await finalizeAttendance(activity.id, attendance);
         if (result.success) {
             toast.success('Attendance finalized and locked! Points have been awarded. 🏆');
+            setTimeout(() => navigate('/admin'), 1500);
         } else {
             toast.error(result.error);
         }

@@ -127,9 +127,10 @@ export const DataProvider = ({ children }) => {
             });
         });
 
-        await refreshActivities();
+        // Skip refreshActivities() here as it might return stale data on Vercel
+        // The optimistic update above is sufficient and trusted.
         return { success: true };
-    }, [activities, refreshActivities]);
+    }, [activities]);
 
     const reopenAttendance = useCallback(async (activityId) => {
         const act = activities.find(a => a.id === activityId);
@@ -141,6 +142,7 @@ export const DataProvider = ({ children }) => {
         setActivitiesState(prev => prev.map(a => a.id === activityId ? { ...a, registrations: updatedRegs, attendanceLocked: false } : a));
 
         await updateActivity(activityId, { registrations: updatedRegs, attendanceLocked: false });
+        // Skip refreshActivities() to preserve local state
         return { success: true };
     }, [activities]);
 
