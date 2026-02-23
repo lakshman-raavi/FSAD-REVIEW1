@@ -1,0 +1,52 @@
+{
+    "activities": [
+        {
+            "id": "1",
+            "name": "Annual Science Fair",
+            "date": "2026-03-15",
+            "venue": "Main Auditorium",
+            "type": "event",
+            "defaultPoints": 20,
+            "attendanceLocked": true,
+            "registrations": [
+                {
+                    "studentId": "STU001",
+                    "name": "John Doe",
+                    "attended": true
+                },
+                {
+                    "studentId": "STU002",
+                    "name": "Jane Smith",
+                    "attended": false
+                }
+            ]
+        },
+        {
+            "id": "2",
+            "name": "Intramural Basketball",
+            "date": "2026-04-10",
+            "venue": "Gymnasium",
+            "type": "sport",
+            "defaultPoints": 15,
+            "attendanceLocked": false,
+            "registrations": [
+                {
+                    "studentId": "STU001",
+                    "name": "John Doe",
+                    "attended": false
+                }
+            ]
+        }
+    ],
+    "users": [
+        {
+            "id": "stu1",
+            "studentId": "STU001",
+            "name": "John Doe",
+            "email": "john@example.com",
+            "password": "student123",
+            "role": "student",
+            "joinedAt": "2026-01-01"
+        }
+    ]
+}
