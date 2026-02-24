@@ -7,13 +7,26 @@ app.use(express.json());
 
 const DB_PATH = path.join(__dirname, 'db.json');
 
+let cachedData = null;
+
 const getData = () => {
-    const data = fs.readFileSync(DB_PATH, 'utf8');
-    return JSON.parse(data);
+    if (!cachedData) {
+        const rawData = fs.readFileSync(DB_PATH, 'utf8');
+        cachedData = JSON.parse(rawData);
+    }
+    return cachedData;
 };
 
 const saveData = (data) => {
-    fs.writeFileSync(DB_PATH, JSON.stringify(data, null, 2), 'utf8');
+    cachedData = data;
+    // On Vercel, writing to disk is ephemeral, so we only update memory for production.
+    if (process.env.NODE_ENV !== 'production') {
+        try {
+            fs.writeFileSync(DB_PATH, JSON.stringify(data, null, 2), 'utf8');
+        } catch (e) {
+            console.warn('Could not write to db.json', e);
+        }
+    }
 };
 
 // API Routes
