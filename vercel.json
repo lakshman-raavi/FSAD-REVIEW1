@@ -11,7 +11,7 @@
         },
         {
             "source": "/((?!api|assets|favicon.ico|vite.svg).*)",
-            "destination": "/student-activity/dist/index.html"
+            "destination": "/"
         }
     ]
 }
