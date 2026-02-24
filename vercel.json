@@ -10,7 +10,7 @@
             "destination": "/student-activity/dist/assets/$1"
         },
         {
-            "source": "/(.*)",
+            "source": "/((?!api).*\\.[^/]+)$",
             "destination": "/student-activity/dist/$1",
             "check": true
         },

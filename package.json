@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node api/index.js",
     "dev": "concurrently \"node api/index.js\" \"cd student-activity && npm run dev\"",
-    "build": "cd student-activity && npm install && npm run build",
+    "build": "cd student-activity && npm run build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
