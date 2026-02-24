@@ -114,7 +114,7 @@ const EventForm = ({ activity, onClose }) => {
                 <Field label="Default Points" name="defaultPoints" required errors={errors}>
                     <input className={`form-control ${errors.defaultPoints ? 'error' : ''}`}
                         type="number" min="1" max="1000" value={form.defaultPoints} onChange={set('defaultPoints')} />
-                    <span className="form-hint">Points auto-awarded to each attendee</span>
+                    <span className="form-hint" style={{ fontSize: '0.75rem' }}>Auto-awarded to attendees</span>
                 </Field>
             </div>
 
