@@ -31,7 +31,7 @@ app.post('/api/activities', (req, res) => {
 
 app.put('/api/activities/:id', (req, res) => {
     const data = getData();
-    const idx = data.activities.findIndex(a => a.id === req.params.id);
+    const idx = data.activities.findIndex(a => String(a.id) === String(req.params.id));
     if (idx !== -1) {
         data.activities[idx] = { ...data.activities[idx], ...req.body };
         saveData(data);
@@ -43,7 +43,7 @@ app.put('/api/activities/:id', (req, res) => {
 
 app.delete('/api/activities/:id', (req, res) => {
     const data = getData();
-    data.activities = data.activities.filter(a => a.id !== req.params.id);
+    data.activities = data.activities.filter(a => String(a.id) !== String(req.params.id));
     saveData(data);
     res.status(204).end();
 });
