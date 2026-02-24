@@ -13,6 +13,54 @@ const Field = ({ label, name, children, required: req, errors }) => (
 );
 
 const EventForm = ({ activity, onClose }) => {
+    const { createActivity, editActivity } = useDataContext();
+    const isEdit = !!activity;
+
+    const [preview, setPreview] = useState(false);
+    const [errors, setErrors] = useState({});
+    const [form, setForm] = useState({
+        name: activity?.name || '',
+        type: activity?.type || 'event',
+        date: activity?.date || '',
+        time: activity?.time || '',
+        venue: activity?.venue || '',
+        description: activity?.description || '',
+        defaultPoints: activity?.defaultPoints ?? 50,
+    });
+
+    const today = new Date().toISOString().split('T')[0];
+
+    const set = (key) => (e) => {
+        const val = e.target.type === 'number' ? Number(e.target.value) : e.target.value;
+        setForm(p => ({ ...p, [key]: val }));
+        setErrors(p => ({ ...p, [key]: '' }));
+    };
+
+    const validate = () => {
+        const e = {};
+        if (!form.name.trim()) e.name = 'Event name is required';
+        if (!form.date) e.date = 'Date is required';
+        else if (!isEdit && form.date < today) e.date = 'Date cannot be in the past';
+        if (!form.time) e.time = 'Time is required';
+        if (!form.venue.trim()) e.venue = 'Venue is required';
+        if (!form.description.trim()) e.description = 'Description is required';
+        if (!form.defaultPoints || form.defaultPoints < 1) e.defaultPoints = 'Points must be at least 1';
+        return e;
+    };
+
+    const handleSubmit = async (e) => {
+        if (e) e.preventDefault();
+        const errs = validate();
+        if (Object.keys(errs).length) { setErrors(errs); return; }
+        if (isEdit) {
+            await editActivity(activity.id, form);
+            toast.success('Event updated successfully!');
+        } else {
+            await createActivity(form);
+            toast.success('Event created successfully! 🎉');
+        }
+        onClose();
+    };
 
     if (preview) {
         return (
