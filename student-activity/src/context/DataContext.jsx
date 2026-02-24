@@ -37,9 +37,12 @@ export const DataProvider = ({ children }) => {
             createdAt: new Date().toISOString().split('T')[0],
             registrations: [],
         };
+
+        // Optimistic update
+        setActivitiesState(prev => [...prev, activity]);
+
         try {
             await addActivity(activity);
-            await refreshActivities();
             return { success: true, activity };
         } catch (e) {
             console.error('Context createActivity error', e);
@@ -50,10 +53,19 @@ export const DataProvider = ({ children }) => {
     }, [refreshActivities]);
 
     const editActivity = useCallback(async (id, updates) => {
+        // Optimistic update
+        let updatedActivity = null;
+        setActivitiesState(prev => prev.map(a => {
+            if (a.id === id) {
+                updatedActivity = { ...a, ...updates };
+                return updatedActivity;
+            }
+            return a;
+        }));
+
         try {
-            const updated = await updateActivity(id, updates);
-            await refreshActivities();
-            return { success: true, activity: updated };
+            await updateActivity(id, updates);
+            return { success: true, activity: updatedActivity };
         } catch (e) {
             console.error('Context editActivity error', e);
             await refreshActivities();
@@ -62,9 +74,11 @@ export const DataProvider = ({ children }) => {
     }, [refreshActivities]);
 
     const removeActivity = useCallback(async (id) => {
+        // Optimistic update
+        setActivitiesState(prev => prev.filter(a => a.id !== id));
+
         try {
             await deleteActivity(id);
-            await refreshActivities();
             return { success: true };
         } catch (e) {
             console.error('Context removeActivity error', e);
