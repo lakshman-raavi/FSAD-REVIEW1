@@ -4,11 +4,11 @@ import { X } from 'lucide-react';
 const Modal = ({ isOpen, onClose, title, children, size = '', footer }) => {
     useEffect(() => {
         if (isOpen) {
-            document.body.style.overflow = 'hidden';
+            document.body.classList.add('modal-open');
         } else {
-            document.body.style.overflow = '';
+            document.body.classList.remove('modal-open');
         }
-        return () => { document.body.style.overflow = ''; };
+        return () => { document.body.classList.remove('modal-open'); };
     }, [isOpen]);
 
     if (!isOpen) return null;

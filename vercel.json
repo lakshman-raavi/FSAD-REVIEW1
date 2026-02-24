@@ -10,7 +10,7 @@
             "destination": "/student-activity/dist/assets/$1"
         },
         {
-            "source": "/((?!api|assets).*\\.[^/]+)",
+            "source": "/((?!api|assets).*\\.(?:css|js|png|jpg|jpeg|gif|svg|ico|json|txt|woff|woff2|ttf|eot))",
             "destination": "/student-activity/dist/$1"
         },
         {
