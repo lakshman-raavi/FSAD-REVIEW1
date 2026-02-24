@@ -33,9 +33,12 @@ export const getActivities = async () => {
     try {
         const res = await fetch('/api/activities');
         if (!res.ok) throw new Error('API Error');
-        return await res.json();
+        const acts = await res.json();
+        // Update local storage with fresh data from API
+        storage.set('activities', acts);
+        return acts;
     } catch (e) {
-        console.error('API getActivities error, falling back', e);
+        console.error('API getActivities error, falling back to cache', e);
         return storage.get('activities', []);
     }
 };
@@ -43,36 +46,58 @@ export const getActivities = async () => {
 export const setActivities = (activities) => storage.set('activities', activities); // Restored for seedData
 
 export const addActivity = async (activity) => {
+    // 1. Update localStorage first as an "optimistic" persistent cache
+    const current = storage.get('activities', []);
+    storage.set('activities', [...current, activity]);
+
     try {
         const res = await fetch('/api/activities', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(activity)
         });
+        if (!res.ok) throw new Error(`API failed with status ${res.status}`);
         return await res.json();
     } catch (e) {
         console.error('API addActivity error', e);
+        throw e; // Re-throw so context can handle it
     }
 };
 
 export const updateActivity = async (id, updates) => {
+    // 1. Update localStorage cache
+    const current = storage.get('activities', []);
+    const idx = current.findIndex(a => a.id === id);
+    if (idx !== -1) {
+        current[idx] = { ...current[idx], ...updates };
+        storage.set('activities', current);
+    }
+
     try {
         const res = await fetch(`/api/activities/${id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(updates)
         });
+        if (!res.ok) throw new Error(`API failed with status ${res.status}`);
         return await res.json();
     } catch (e) {
         console.error('API updateActivity error', e);
+        throw e;
     }
 };
 
 export const deleteActivity = async (id) => {
+    // 1. Update localStorage cache
+    const current = storage.get('activities', []);
+    storage.set('activities', current.filter(a => a.id !== id));
+
     try {
-        await fetch(`/api/activities/${id}`, { method: 'DELETE' });
+        const res = await fetch(`/api/activities/${id}`, { method: 'DELETE' });
+        if (!res.ok && res.status !== 404) throw new Error(`API failed with status ${res.status}`);
     } catch (e) {
         console.error('API deleteActivity error', e);
+        throw e;
     }
 };
 

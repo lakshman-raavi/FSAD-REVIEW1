@@ -10,11 +10,7 @@
             "destination": "/student-activity/dist/assets/$1"
         },
         {
-            "source": "/vite.svg",
-            "destination": "/student-activity/dist/vite.svg"
-        },
-        {
-            "source": "/(.*)",
+            "source": "/((?!api|assets|favicon.ico|vite.svg).*)",
             "destination": "/student-activity/dist/index.html"
         }
     ]

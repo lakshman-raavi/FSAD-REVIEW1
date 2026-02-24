@@ -37,20 +37,40 @@ export const DataProvider = ({ children }) => {
             createdAt: new Date().toISOString().split('T')[0],
             registrations: [],
         };
-        await addActivity(activity);
-        await refreshActivities();
-        return activity;
+        try {
+            await addActivity(activity);
+            await refreshActivities();
+            return { success: true, activity };
+        } catch (e) {
+            console.error('Context createActivity error', e);
+            // Even if API fails, storage.js updated localStorage, so refresh will show it
+            await refreshActivities();
+            return { success: true, activity, warning: 'Saved locally (offline mode)' };
+        }
     }, [refreshActivities]);
 
     const editActivity = useCallback(async (id, updates) => {
-        const updated = await updateActivity(id, updates);
-        await refreshActivities();
-        return updated;
+        try {
+            const updated = await updateActivity(id, updates);
+            await refreshActivities();
+            return { success: true, activity: updated };
+        } catch (e) {
+            console.error('Context editActivity error', e);
+            await refreshActivities();
+            return { success: true, warning: 'Updated locally (offline mode)' };
+        }
     }, [refreshActivities]);
 
     const removeActivity = useCallback(async (id) => {
-        await deleteActivity(id);
-        await refreshActivities();
+        try {
+            await deleteActivity(id);
+            await refreshActivities();
+            return { success: true };
+        } catch (e) {
+            console.error('Context removeActivity error', e);
+            await refreshActivities();
+            return { success: true, warning: 'Removed locally (offline mode)' };
+        }
     }, [refreshActivities]);
 
     const registerForActivity = useCallback(async (activityId, student) => {

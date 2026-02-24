@@ -1,52 +1,66 @@
 {
-    "activities": [
+  "activities": [
+    {
+      "id": "1",
+      "name": "Annual Science Fair",
+      "date": "2026-03-15",
+      "venue": "Main Auditorium",
+      "type": "event",
+      "defaultPoints": 20,
+      "attendanceLocked": true,
+      "registrations": [
         {
-            "id": "1",
-            "name": "Annual Science Fair",
-            "date": "2026-03-15",
-            "venue": "Main Auditorium",
-            "type": "event",
-            "defaultPoints": 20,
-            "attendanceLocked": true,
-            "registrations": [
-                {
-                    "studentId": "STU001",
-                    "name": "John Doe",
-                    "attended": true
-                },
-                {
-                    "studentId": "STU002",
-                    "name": "Jane Smith",
-                    "attended": false
-                }
-            ]
+          "studentId": "STU001",
+          "name": "John Doe",
+          "attended": true
         },
         {
-            "id": "2",
-            "name": "Intramural Basketball",
-            "date": "2026-04-10",
-            "venue": "Gymnasium",
-            "type": "sport",
-            "defaultPoints": 15,
-            "attendanceLocked": false,
-            "registrations": [
-                {
-                    "studentId": "STU001",
-                    "name": "John Doe",
-                    "attended": false
-                }
-            ]
+          "studentId": "STU002",
+          "name": "Jane Smith",
+          "attended": false
         }
-    ],
-    "users": [
+      ]
+    },
+    {
+      "id": "2",
+      "name": "Intramural Basketball",
+      "date": "2026-04-10",
+      "venue": "Gymnasium",
+      "type": "sport",
+      "defaultPoints": 15,
+      "attendanceLocked": false,
+      "registrations": [
         {
-            "id": "stu1",
-            "studentId": "STU001",
-            "name": "John Doe",
-            "email": "john@example.com",
-            "password": "student123",
-            "role": "student",
-            "joinedAt": "2026-01-01"
+          "studentId": "STU001",
+          "studentName": "John Doe",
+          "attended": false,
+          "points": 0
         }
-    ]
+      ]
+    },
+    {
+      "id": "1771907004671_beho56u",
+      "name": "xx",
+      "type": "sport",
+      "date": "2026-02-26",
+      "time": "09:57",
+      "venue": "Maingate",
+      "description": "fgergr",
+      "defaultPoints": 50,
+      "attendanceLocked": false,
+      "createdAt": "2026-02-24",
+      "registrations": []
+    }
+  ],
+  "users": [
+    {
+      "id": "stu1",
+      "studentId": "STU001",
+      "name": "John Doe",
+      "email": "john@example.com",
+      "password": "student123",
+      "role": "student",
+      "joinedAt": "2026-01-01"
+    }
+  ]
 }

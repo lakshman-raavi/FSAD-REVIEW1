@@ -1,16 +1,87 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useAuthContext } from '../context/AuthContext.jsx';
-import { Zap, Eye, EyeOff, ArrowLeft, Shield, Users } from 'lucide-react';
+import { Zap, Eye, EyeOff, ArrowLeft, Shield, Users, Lock, Mail, User } from 'lucide-react';
 import toast from 'react-hot-toast';
 import Captcha from '../components/Captcha.jsx';
-import { useRef } from 'react';
+
+const InputField = ({ label, icon: Icon, type, value, onChange, placeholder, showEye, onEyeClick, id }) => (
+    <div style={{ marginBottom: '1.25rem' }}>
+        <label style={{
+            display: 'block',
+            fontSize: '0.875rem',
+            fontWeight: 600,
+            color: '#475569',
+            marginBottom: '0.5rem',
+            marginLeft: '4px'
+        }}>
+            {label}
+        </label>
+        <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+            <div style={{
+                position: 'absolute',
+                left: '12px',
+                color: '#94a3b8',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                pointerEvents: 'none',
+                zIndex: 10
+            }}>
+                <Icon size={18} />
+            </div>
+            <input
+                style={{
+                    width: '100%',
+                    padding: '0.75rem 1rem 0.75rem 2.75rem',
+                    background: '#ffffff',
+                    border: '1.5px solid #e2e8f0',
+                    borderRadius: '12px',
+                    color: '#1e293b',
+                    fontSize: '0.95rem',
+                    outline: 'none',
+                    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                    fontFamily: 'inherit',
+                    boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
+                }}
+                id={id}
+                type={type}
+                placeholder={placeholder}
+                value={value}
+                onChange={onChange}
+                required
+                className="saas-input"
+            />
+            {showEye !== undefined && (
+                <button
+                    type="button"
+                    onClick={onEyeClick}
+                    style={{
+                        position: 'absolute',
+                        right: '12px',
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                        color: '#94a3b8',
+                        padding: '4px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        zIndex: 10
+                    }}
+                >
+                    {showEye ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+            )}
+        </div>
+    </div>
+);
 
 const LoginPage = () => {
-    const { login, register, user } = useAuthContext();
+    const { login, register } = useAuthContext();
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const role = searchParams.get('role') || 'student';
+
     const [tab, setTab] = useState(role); // 'admin' | 'student'
     const [mode, setMode] = useState('login'); // 'login' | 'register'
     const [showPw, setShowPw] = useState(false);
@@ -24,11 +95,6 @@ const LoginPage = () => {
     const studentCaptchaRef = useRef();
     const regCaptchaRef = useRef();
 
-    // Disabled auto-redirect per user request to ensure credential login
-    // useEffect(() => {
-    //     if (user) navigate(user.role === 'admin' ? '/admin' : '/student', { replace: true });
-    // }, [user, navigate]);
-
     useEffect(() => { setTab(role); }, [role]);
 
     const handleAdminLogin = async (e) => {
@@ -38,11 +104,14 @@ const LoginPage = () => {
             return;
         }
         setLoading(true);
-        await new Promise(r => setTimeout(r, 400));
         const result = await login(adminForm, 'admin');
         setLoading(false);
-        if (result.success) { toast.success('Welcome back, Admin!'); navigate('/admin'); }
-        else toast.error(result.error);
+        if (result.success) {
+            toast.success('Welcome back, Administrator');
+            navigate('/admin');
+        } else {
+            toast.error(result.error);
+        }
     };
 
     const handleStudentLogin = async (e) => {
@@ -52,11 +121,14 @@ const LoginPage = () => {
             return;
         }
         setLoading(true);
-        await new Promise(r => setTimeout(r, 400));
         const result = await login(studentForm, 'student');
         setLoading(false);
-        if (result.success) { toast.success(`Welcome back, ${result.user.name}!`); navigate('/student'); }
-        else toast.error(result.error);
+        if (result.success) {
+            toast.success(`Welcome back, ${result.user.name}`);
+            navigate('/student');
+        } else {
+            toast.error(result.error);
+        }
     };
 
     const handleRegister = async (e) => {
@@ -68,187 +140,285 @@ const LoginPage = () => {
             return;
         }
         setLoading(true);
-        await new Promise(r => setTimeout(r, 400));
         const result = await register(regForm);
         setLoading(false);
-        if (result.success) { toast.success('Account created! Welcome to ActivityHub 🎉'); navigate('/student'); }
-        else toast.error(result.error);
+        if (result.success) {
+            toast.success('Account created successfully! 🎉');
+            navigate('/student');
+        } else {
+            toast.error(result.error);
+        }
     };
 
-    const inputStyle = { width: '100%', padding: '0.75rem 1rem', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 10, color: 'white', fontSize: '0.9rem', fontFamily: 'inherit', outline: 'none', transition: 'all 0.2s' };
-
     return (
-        <div style={{ minHeight: '100vh', display: 'flex', background: 'var(--gradient-hero)' }}>
-            {/* Left panel */}
-            <div style={{ flex: 1, maxWidth: 480, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '3rem', position: 'relative' }}>
-                <Link to="/" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', color: 'rgba(255,255,255,0.6)', fontSize: '0.875rem', marginBottom: '3rem', transition: 'color 0.2s' }}
-                    onMouseEnter={e => e.currentTarget.style.color = 'white'}
-                    onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.6)'}
-                >
-                    <ArrowLeft size={16} /> Back to Home
-                </Link>
+        <div style={{
+            minHeight: '100vh',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
+            position: 'relative',
+            overflow: 'hidden',
+            padding: '2rem'
+        }}>
+            {/* Ambient Background Elements */}
+            <div style={{ position: 'absolute', top: '-10%', left: '-5%', width: '40%', height: '40%', background: 'radial-gradient(circle, rgba(79,70,229,0.08) 0%, transparent 70%)', filter: 'blur(60px)' }} />
+            <div style={{ position: 'absolute', bottom: '-10%', right: '-5%', width: '40%', height: '40%', background: 'radial-gradient(circle, rgba(6,182,212,0.05) 0%, transparent 70%)', filter: 'blur(60px)' }} />
 
-                {/* Logo */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '2.5rem' }}>
-                    <div style={{ width: 44, height: 44, borderRadius: 12, background: 'linear-gradient(135deg,#6366f1,#06b6d4)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <Zap size={22} color="white" />
-                    </div>
-                    <span style={{ fontWeight: 800, fontSize: '1.4rem', color: 'white' }}>Activity<span style={{ color: '#67e8f9' }}>Hub</span></span>
-                </div>
-
-                {/* Role tabs */}
-                <div style={{ display: 'flex', background: 'rgba(255,255,255,0.08)', borderRadius: 12, padding: '0.3rem', marginBottom: '2rem', border: '1px solid rgba(255,255,255,0.1)' }}>
-                    {[['admin', <Shield size={15} />, 'Admin'], ['student', <Users size={15} />, 'Student']].map(([r, icon, label]) => (
-                        <button key={r} onClick={() => { setTab(r); setMode('login'); }}
-                            style={{
-                                flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
-                                padding: '0.6rem', borderRadius: 9, border: 'none', cursor: 'pointer', fontWeight: 600,
-                                fontSize: '0.875rem', fontFamily: 'inherit', transition: 'all 0.2s',
-                                background: tab === r ? 'rgba(255,255,255,0.15)' : 'transparent',
-                                color: tab === r ? 'white' : 'rgba(255,255,255,0.5)',
-                            }}>
-                            {icon} {label}
-                        </button>
-                    ))}
-                </div>
-
-
-                {/* Admin form */}
-                {tab === 'admin' && (
-                    <form onSubmit={handleAdminLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                        <div>
-                            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'rgba(255,255,255,0.7)', marginBottom: '0.4rem' }}>Username</label>
-                            <input style={inputStyle} type="text" placeholder="admin"
-                                value={adminForm.username} onChange={e => setAdminForm(p => ({ ...p, username: e.target.value }))}
-                                required autoFocus
-                                onFocus={e => e.target.style.borderColor = '#818cf8'}
-                                onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.15)'}
-                            />
+            <div style={{ width: '100%', maxWidth: '440px', position: 'relative', zIndex: 10 }}>
+                {/* Logo & Header */}
+                <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
+                    <Link to="/" style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.75rem',
+                        textDecoration: 'none',
+                        marginBottom: '1.5rem',
+                        animation: 'float 6s ease-in-out infinite'
+                    }}>
+                        <div style={{
+                            width: '52px',
+                            height: '52px',
+                            borderRadius: '16px',
+                            background: 'linear-gradient(135deg, #4f46e5, #0ea5e9)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            boxShadow: '0 10px 15px -3px rgba(79,70,229,0.3)'
+                        }}>
+                            <Zap size={26} color="white" fill="white" />
                         </div>
-                        <div>
-                            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'rgba(255,255,255,0.7)', marginBottom: '0.4rem' }}>Password</label>
-                            <div style={{ position: 'relative' }}>
-                                <input style={{ ...inputStyle, paddingRight: '2.75rem' }} type={showPw ? 'text' : 'password'} placeholder="admin123"
-                                    value={adminForm.password} onChange={e => setAdminForm(p => ({ ...p, password: e.target.value }))}
-                                    required
-                                    onFocus={e => e.target.style.borderColor = '#818cf8'}
-                                    onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.15)'}
-                                />
-                                <button type="button" onClick={() => setShowPw(p => !p)}
-                                    style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.5)', padding: 4 }}>
-                                    {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
-                                </button>
-                            </div>
-                        </div>
-                        <div style={{ padding: '0.75rem 1rem', background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.3)', borderRadius: 8, fontSize: '0.8rem', color: 'rgba(255,255,255,0.7)' }}>
-                            💡 Demo credentials: <strong>admin</strong> / <strong>admin123</strong>
-                        </div>
-                        <Captcha ref={adminCaptchaRef} />
-                        <button type="submit" className="btn btn-primary btn-lg btn-full" disabled={loading} style={{ marginTop: '0.5rem' }}>
-                            {loading ? <span className="spinner" /> : 'Sign In as Admin'}
-                        </button>
-                    </form>
-                )}
-
-                {/* Student forms */}
-                {tab === 'student' && mode === 'login' && (
-                    <form onSubmit={handleStudentLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                        <div>
-                            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'rgba(255,255,255,0.7)', marginBottom: '0.4rem' }}>Student ID or Email</label>
-                            <input style={inputStyle} type="text" placeholder="e.g. STU001 or alice@university.edu"
-                                value={studentForm.studentId} onChange={e => setStudentForm(p => ({ ...p, studentId: e.target.value }))}
-                                required autoFocus
-                                onFocus={e => e.target.style.borderColor = '#67e8f9'}
-                                onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.15)'}
-                            />
-                        </div>
-                        <div>
-                            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'rgba(255,255,255,0.7)', marginBottom: '0.4rem' }}>Password</label>
-                            <div style={{ position: 'relative' }}>
-                                <input style={{ ...inputStyle, paddingRight: '2.75rem' }} type={showPw ? 'text' : 'password'} placeholder="Your password"
-                                    value={studentForm.password} onChange={e => setStudentForm(p => ({ ...p, password: e.target.value }))}
-                                    required
-                                    onFocus={e => e.target.style.borderColor = '#67e8f9'}
-                                    onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.15)'}
-                                />
-                                <button type="button" onClick={() => setShowPw(p => !p)}
-                                    style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.5)', padding: 4 }}>
-                                    {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
-                                </button>
-                            </div>
-                        </div>
-                        <div style={{ padding: '0.75rem 1rem', background: 'rgba(6,182,212,0.1)', border: '1px solid rgba(6,182,212,0.25)', borderRadius: 8, fontSize: '0.8rem', color: 'rgba(255,255,255,0.7)' }}>
-                            💡 Demo: <strong>STU001</strong> / <strong>student123</strong>
-                        </div>
-                        <Captcha ref={studentCaptchaRef} />
-                        <button type="submit" className="btn btn-primary btn-lg btn-full" disabled={loading} style={{ marginTop: '0.5rem' }}>
-                            {loading ? <span className="spinner" /> : 'Sign In as Student'}
-                        </button>
-                        <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.55)', fontSize: '0.875rem' }}>
-                            No account?{' '}
-                            <button type="button" onClick={() => setMode('register')}
-                                style={{ background: 'none', border: 'none', color: '#67e8f9', cursor: 'pointer', fontWeight: 600, fontFamily: 'inherit', fontSize: 'inherit' }}>
-                                Register here
-                            </button>
-                        </p>
-                    </form>
-                )}
-
-                {tab === 'student' && mode === 'register' && (
-                    <form onSubmit={handleRegister} style={{ display: 'flex', flexDirection: 'column', gap: '0.875rem' }}>
-                        <h3 style={{ color: 'white', fontWeight: 700, marginBottom: '0.25rem' }}>Create your account</h3>
-                        {[
-                            { label: 'Student ID', key: 'studentId', placeholder: 'e.g. STU006', type: 'text' },
-                            { label: 'Full Name', key: 'name', placeholder: 'Your full name', type: 'text' },
-                            { label: 'Email', key: 'email', placeholder: 'your@university.edu', type: 'email' },
-                            { label: 'Password', key: 'password', placeholder: 'Min. 6 characters', type: 'password' },
-                            { label: 'Confirm Password', key: 'confirmPassword', placeholder: 'Repeat password', type: 'password' },
-                        ].map(field => (
-                            <div key={field.key}>
-                                <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: 'rgba(255,255,255,0.7)', marginBottom: '0.3rem' }}>{field.label}</label>
-                                <input style={inputStyle} type={field.type} placeholder={field.placeholder}
-                                    value={regForm[field.key]} onChange={e => setRegForm(p => ({ ...p, [field.key]: e.target.value }))}
-                                    required
-                                    onFocus={e => e.target.style.borderColor = '#67e8f9'}
-                                    onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.15)'}
-                                />
-                            </div>
-                        ))}
-                        <Captcha ref={regCaptchaRef} />
-                        <button type="submit" className="btn btn-primary btn-lg btn-full" disabled={loading} style={{ marginTop: '0.25rem' }}>
-                            {loading ? <span className="spinner" /> : 'Create Account'}
-                        </button>
-                        <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.55)', fontSize: '0.875rem' }}>
-                            Already have an account?{' '}
-                            <button type="button" onClick={() => setMode('login')}
-                                style={{ background: 'none', border: 'none', color: '#67e8f9', cursor: 'pointer', fontWeight: 600, fontFamily: 'inherit', fontSize: 'inherit' }}>
-                                Sign in
-                            </button>
-                        </p>
-                    </form>
-                )}
-            </div>
-
-            {/* Right decorative panel */}
-            <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '3rem', position: 'relative', overflow: 'hidden' }} className="hide-on-mobile">
-                <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.15)' }} />
-                <div style={{ position: 'relative', zIndex: 1, textAlign: 'center' }}>
-                    <div style={{ fontSize: '5rem', marginBottom: '1.5rem', animation: 'bounce 3s ease-in-out infinite' }}>🎓</div>
-                    <h2 style={{ color: 'white', fontSize: '1.75rem', marginBottom: '1rem' }}>Your Campus<br />Activity Hub</h2>
-                    <p style={{ color: 'rgba(255,255,255,0.65)', maxWidth: 340, lineHeight: 1.7 }}>
-                        Track events, earn points, collect badges, and stay connected with your campus community.
+                        <span style={{
+                            fontSize: '1.85rem',
+                            fontWeight: 900,
+                            color: '#0f172a',
+                            letterSpacing: '-0.025em'
+                        }}>
+                            Activity<span style={{ color: '#0ea5e9' }}>Hub</span>
+                        </span>
+                    </Link>
+                    <h1 style={{ color: '#0f172a', fontSize: '1.6rem', fontWeight: 800, margin: '0 0 0.5rem', letterSpacing: '-0.01em' }}>
+                        {mode === 'login' ? 'Welcome back' : 'Create an account'}
+                    </h1>
+                    <p style={{ color: '#64748b', fontSize: '1.05rem', fontWeight: 500 }}>
+                        {mode === 'login' ? 'Enter your credentials to access your dashboard' : 'Join our community and start tracking your activities'}
                     </p>
-                    <div style={{ display: 'flex', justifyContent: 'center', gap: '1.5rem', marginTop: '2rem', flexWrap: 'wrap' }}>
-                        {['🏆 Points', '🎖️ Badges', '📅 Events', '📊 Reports'].map(f => (
-                            <div key={f} style={{ padding: '0.5rem 1rem', background: 'rgba(255,255,255,0.1)', borderRadius: 100, fontSize: '0.85rem', color: 'rgba(255,255,255,0.85)', border: '1px solid rgba(255,255,255,0.15)' }}>{f}</div>
-                        ))}
-                    </div>
+                </div>
+
+                <div className="card" style={{
+                    background: '#ffffff',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: '28px',
+                    padding: '2.5rem',
+                    boxShadow: '0 25px 50px -12px rgba(0,0,0,0.08)'
+                }}>
+                    {/* Role Toggles */}
+                    {mode === 'login' && (
+                        <div style={{
+                            display: 'flex',
+                            background: '#f8fafc',
+                            borderRadius: '16px',
+                            padding: '4px',
+                            marginBottom: '2.25rem',
+                            border: '1.5px solid #e2e8f0'
+                        }}>
+                            {[
+                                { id: 'student', label: 'Student', icon: <Users size={16} /> },
+                                { id: 'admin', label: 'Admin', icon: <Shield size={16} /> }
+                            ].map(t => (
+                                <button
+                                    key={t.id}
+                                    onClick={() => setTab(t.id)}
+                                    style={{
+                                        flex: 1,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        gap: '8px',
+                                        padding: '12px',
+                                        borderRadius: '12px',
+                                        border: 'none',
+                                        cursor: 'pointer',
+                                        fontSize: '0.95rem',
+                                        fontWeight: 700,
+                                        transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                                        background: tab === t.id ? '#ffffff' : 'transparent',
+                                        color: tab === t.id ? '#4f46e5' : '#64748b',
+                                        boxShadow: tab === t.id ? '0 4px 6px -1px rgba(0,0,0,0.1)' : 'none'
+                                    }}
+                                    className="role-toggle"
+                                >
+                                    {t.icon} {t.label}
+                                </button>
+                            ))}
+                        </div>
+                    )}
+
+                    {/* Forms */}
+                    {tab === 'admin' ? (
+                        <form onSubmit={handleAdminLogin}>
+                            <InputField
+                                label="Admin Username"
+                                icon={User}
+                                type="text"
+                                placeholder="Username"
+                                value={adminForm.username}
+                                onChange={e => setAdminForm(p => ({ ...p, username: e.target.value }))}
+                                id="admin-username"
+                            />
+                            <InputField
+                                label="Password"
+                                icon={Lock}
+                                type={showPw ? 'text' : 'password'}
+                                placeholder="••••••••"
+                                value={adminForm.password}
+                                onChange={e => setAdminForm(p => ({ ...p, password: e.target.value }))}
+                                showEye={showPw}
+                                onEyeClick={() => setShowPw(!showPw)}
+                                id="admin-password"
+                            />
+                            <Captcha ref={adminCaptchaRef} theme="light-saas" />
+                            <button type="submit" className="btn-full" disabled={loading} style={{
+                                marginTop: '1.75rem',
+                                borderRadius: '14px',
+                                background: 'linear-gradient(135deg, #4f46e5, #4338ca)',
+                                color: 'white',
+                                boxShadow: '0 4px 12px rgba(79,70,229,0.25)'
+                            }}>
+                                {loading ? <span className="spinner" /> : 'Sign in as Admin'}
+                            </button>
+                        </form>
+                    ) : mode === 'login' ? (
+                        <form onSubmit={handleStudentLogin}>
+                            <InputField
+                                label="Student ID / Email"
+                                icon={Mail}
+                                type="text"
+                                placeholder="ID or Email"
+                                value={studentForm.studentId}
+                                onChange={e => setStudentForm(p => ({ ...p, studentId: e.target.value }))}
+                                id="student-id"
+                            />
+                            <InputField
+                                label="Password"
+                                icon={Lock}
+                                type={showPw ? 'text' : 'password'}
+                                placeholder="••••••••"
+                                value={studentForm.password}
+                                onChange={e => setStudentForm(p => ({ ...p, password: e.target.value }))}
+                                showEye={showPw}
+                                onEyeClick={() => setShowPw(!showPw)}
+                                id="student-password"
+                            />
+                            <Captcha ref={studentCaptchaRef} theme="light-saas" />
+                            <button type="submit" className="btn-full" disabled={loading} style={{
+                                marginTop: '1.75rem',
+                                borderRadius: '14px',
+                                background: 'linear-gradient(135deg, #4f46e5, #4338ca)',
+                                color: 'white',
+                                boxShadow: '0 4px 12px rgba(79,70,229,0.25)'
+                            }}>
+                                {loading ? <span className="spinner" /> : 'Sign in as Student'}
+                            </button>
+                            <p style={{ textAlign: 'center', marginTop: '1.75rem', fontSize: '0.95rem', color: '#64748b', fontWeight: 600 }}>
+                                Don't have an account? {' '}
+                                <button
+                                    type="button"
+                                    onClick={() => setMode('register')}
+                                    style={{ background: 'none', border: 'none', color: '#4f46e5', fontWeight: 800, cursor: 'pointer', padding: 0 }}
+                                >
+                                    Register here
+                                </button>
+                            </p>
+                        </form>
+                    ) : (
+                        <form onSubmit={handleRegister}>
+                            <InputField
+                                label="Full Name"
+                                icon={User}
+                                type="text"
+                                placeholder="Your Name"
+                                value={regForm.name}
+                                onChange={e => setRegForm(p => ({ ...p, name: e.target.value }))}
+                                id="reg-name"
+                            />
+                            <InputField
+                                label="Student ID"
+                                icon={Shield}
+                                type="text"
+                                placeholder="STU-000"
+                                value={regForm.studentId}
+                                onChange={e => setRegForm(p => ({ ...p, studentId: e.target.value }))}
+                                id="reg-id"
+                            />
+                            <InputField
+                                label="Email Address"
+                                icon={Mail}
+                                type="email"
+                                placeholder="name@university.edu"
+                                value={regForm.email}
+                                onChange={e => setRegForm(p => ({ ...p, email: e.target.value }))}
+                                id="reg-email"
+                            />
+                            <InputField
+                                label="Password"
+                                icon={Lock}
+                                type="password"
+                                placeholder="••••••••"
+                                value={regForm.password}
+                                onChange={e => setRegForm(p => ({ ...p, password: e.target.value }))}
+                                id="reg-password"
+                            />
+                            <Captcha ref={regCaptchaRef} theme="light-saas" />
+                            <button type="submit" className="btn-full" disabled={loading} style={{
+                                marginTop: '1.75rem',
+                                borderRadius: '14px',
+                                background: 'linear-gradient(135deg, #4f46e5, #4338ca)',
+                                color: 'white',
+                                boxShadow: '0 4px 12px rgba(79,70,229,0.25)'
+                            }}>
+                                {loading ? <span className="spinner" /> : 'Create Account'}
+                            </button>
+                            <p style={{ textAlign: 'center', marginTop: '1.75rem', fontSize: '0.95rem', color: '#64748b', fontWeight: 600 }}>
+                                Already have an account? {' '}
+                                <button
+                                    type="button"
+                                    onClick={(e) => { e.preventDefault(); setMode('login'); }}
+                                    style={{ background: 'none', border: 'none', color: '#4f46e5', fontWeight: 800, cursor: 'pointer', padding: 0 }}
+                                >
+                                    Sign in
+                                </button>
+                            </p>
+                        </form>
+                    )}
+                </div>
+
+                {/* Footer Links */}
+                <div style={{ textAlign: 'center', marginTop: '2.5rem' }}>
+                    <Link to="/" style={{ color: '#64748b', fontWeight: 700, fontSize: '0.9rem', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s' }}
+                        className="back-link"
+                    >
+                        <ArrowLeft size={16} /> Back to Landing Page
+                    </Link>
                 </div>
             </div>
 
             <style>{`
-        @media (max-width: 768px) { .hide-on-mobile { display: none !important; } }
-      `}</style>
+                .saas-input:focus {
+                    background: #ffffff !important;
+                    border-color: #4f46e5 !important;
+                    box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1) !important;
+                }
+                .btn-full { width: 100%; display: flex; align-items: center; justify-content: center; height: 52px; font-size: 1rem; font-weight: 800; border: none; cursor: pointer; transition: all 0.2s; }
+                .btn-full:hover { opacity: 0.95; transform: translateY(-1px); box-shadow: 0 6px 15px rgba(79,70,229,0.3) !important; }
+                .btn-full:active { transform: translateY(0); }
+                .role-toggle:hover:not(:disabled) { background: #e2e8f0 !important; }
+                .back-link:hover { color: #4f46e5 !important; transform: translateX(-4px); }
+                @keyframes float {
+                    0%, 100% { transform: translateY(0); }
+                    50% { transform: translateY(-8px); }
+                }
+            `}</style>
         </div>
     );
 };

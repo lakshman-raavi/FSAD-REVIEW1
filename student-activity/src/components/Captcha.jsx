@@ -1,7 +1,7 @@
 import { useState, useEffect, useImperativeHandle, forwardRef } from 'react';
 import { RefreshCw } from 'lucide-react';
 
-const Captcha = forwardRef(({ onVerify }, ref) => {
+const Captcha = forwardRef(({ theme = 'default' }, ref) => {
     const [captcha, setCaptcha] = useState('');
     const [userInput, setUserInput] = useState('');
 
@@ -21,73 +21,95 @@ const Captcha = forwardRef(({ onVerify }, ref) => {
 
     useImperativeHandle(ref, () => ({
         validate: () => {
-            const isValid = userInput === captcha;
-            if (!isValid) {
-                generateCaptcha(); // Reset on failure
-            }
+            const isValid = userInput.toLowerCase() === captcha.toLowerCase();
+            generateCaptcha(); // Always reset to prevent reuse
             return isValid;
         },
         refresh: generateCaptcha
-    }));
+    }), [userInput, captcha]);
+
+    const isSaas = theme === 'saas' || theme === 'light-saas';
+    const isLight = theme === 'light-saas';
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                <div style={{
-                    padding: '0.5rem 1rem',
-                    background: 'rgba(255,255,255,0.1)',
-                    borderRadius: 8,
-                    fontSize: '1.2rem',
-                    fontWeight: 700,
-                    letterSpacing: '4px',
-                    color: '#67e8f9',
-                    fontStyle: 'italic',
-                    textDecoration: 'line-through',
-                    userSelect: 'none',
-                    border: '1px solid rgba(103, 232, 249, 0.3)',
-                    position: 'relative',
-                    overflow: 'hidden'
-                }}>
-                    <div style={{ position: 'absolute', top: '20%', left: 0, width: '100%', height: '1px', background: 'rgba(255,255,255,0.2)', transform: 'rotate(5deg)' }} />
-                    <div style={{ position: 'absolute', top: '70%', left: 0, width: '100%', height: '1px', background: 'rgba(255,255,255,0.2)', transform: 'rotate(-5deg)' }} />
+            {isSaas && <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: isLight ? '#475569' : 'rgba(255,255,255,0.6)', marginLeft: '4px' }}>Verification Code</label>}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                <div
+                    className="captcha-display"
+                    style={{
+                        padding: isSaas ? '0.5rem 1rem' : '0.6rem 1.2rem',
+                        background: isLight ? '#f8fafc' : (isSaas ? 'rgba(255,255,255,0.03)' : 'linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05))'),
+                        borderRadius: isSaas ? '12px' : 12,
+                        fontSize: isSaas ? '1.25rem' : '1.4rem',
+                        fontWeight: 800,
+                        letterSpacing: '5px',
+                        color: isLight ? '#4f46e5' : '#67e8f9',
+                        fontStyle: 'italic',
+                        textDecoration: 'line-through',
+                        userSelect: 'none',
+                        border: isLight ? '1.5px solid #e2e8f0' : (isSaas ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(103, 232, 249, 0.4)'),
+                        position: 'relative',
+                        overflow: 'hidden',
+                        boxShadow: isSaas ? 'none' : '0 4px 12px rgba(0,0,0,0.1)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        minWidth: isSaas ? '140px' : '140px',
+                        transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
+                    }}
+                >
+                    <div style={{ position: 'absolute', top: '30%', left: 0, width: '100%', height: '1.2px', background: isLight ? 'rgba(79, 70, 229, 0.1)' : 'rgba(103, 232, 249, 0.15)', transform: 'rotate(3deg)' }} />
+                    <div style={{ position: 'absolute', top: '70%', left: 0, width: '100%', height: '1.2px', background: isLight ? 'rgba(79, 70, 229, 0.1)' : 'rgba(103, 232, 249, 0.15)', transform: 'rotate(-3deg)' }} />
                     {captcha}
                 </div>
                 <button
                     type="button"
                     onClick={generateCaptcha}
                     style={{
-                        background: 'rgba(255,255,255,0.05)',
-                        border: '1px solid rgba(255,255,255,0.1)',
-                        padding: '0.5rem',
-                        borderRadius: 8,
+                        background: isLight ? '#ffffff' : 'rgba(255,255,255,0.05)',
+                        border: isLight ? '1.5px solid #e2e8f0' : '1px solid rgba(255,255,255,0.1)',
+                        padding: '0.6rem',
+                        borderRadius: '12px',
                         cursor: 'pointer',
-                        color: 'rgba(255,255,255,0.7)',
+                        color: isLight ? '#64748b' : 'rgba(255,255,255,0.5)',
                         display: 'flex',
                         alignItems: 'center',
-                        justifyContent: 'center'
+                        justifyContent: 'center',
+                        transition: 'all 0.2s',
+                        boxShadow: isLight ? '0 1px 2px rgba(0,0,0,0.05)' : 'none'
                     }}
                     title="Refresh CAPTCHA"
+                    className="captcha-refresh-btn"
                 >
                     <RefreshCw size={18} />
                 </button>
             </div>
             <input
                 type="text"
-                placeholder="Enter CAPTCHA"
+                placeholder="Type the code above"
                 value={userInput}
                 onChange={(e) => setUserInput(e.target.value)}
                 style={{
                     width: '100%',
                     padding: '0.75rem 1rem',
-                    background: 'rgba(255,255,255,0.06)',
-                    border: '1px solid rgba(255,255,255,0.15)',
-                    borderRadius: 10,
-                    color: 'white',
-                    fontSize: '0.9rem',
+                    background: isLight ? '#ffffff' : (isSaas ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.06)'),
+                    border: isLight ? '1.5px solid #e2e8f0' : (isSaas ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(255,255,255,0.15)'),
+                    borderRadius: '12px',
+                    color: isLight ? '#1e293b' : 'white',
+                    fontSize: '0.95rem',
                     fontFamily: 'inherit',
-                    outline: 'none'
+                    outline: 'none',
+                    transition: 'all 0.2s',
+                    boxShadow: isLight ? '0 1px 2px rgba(0,0,0,0.05)' : 'none'
                 }}
             />
+            <style>{`
+                .captcha-refresh-btn:hover {
+                    border-color: #4f46e5 !important;
+                    color: #4f46e5 !important;
+                }
+            `}</style>
         </div>
     );
 });

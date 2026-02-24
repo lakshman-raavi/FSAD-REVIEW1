@@ -31,7 +31,10 @@ const EventForm = ({ activity, onClose }) => {
     const today = new Date().toISOString().split('T')[0];
 
     const set = (key) => (e) => {
-        const val = e.target.type === 'number' ? Number(e.target.value) : e.target.value;
+        let val = e.target.value;
+        if (e.target.type === 'number') {
+            val = val === '' ? '' : Number(val);
+        }
         setForm(p => ({ ...p, [key]: val }));
         setErrors(p => ({ ...p, [key]: '' }));
     };

@@ -1,13 +1,14 @@
 import { useState, useMemo } from 'react';
 import { useAuthContext } from '../../context/AuthContext.jsx';
 import { useDataContext } from '../../context/DataContext.jsx';
-import { Search, Calendar, MapPin, Star, Users, CheckCircle, Lock } from 'lucide-react';
+import { Search, Calendar, MapPin, Star, Users, CheckCircle, Lock, RotateCw } from 'lucide-react';
 import toast from 'react-hot-toast';
 import EmptyState from '../../components/EmptyState.jsx';
 
 const EventBrowser = () => {
     const { user } = useAuthContext();
-    const { activities, registerForActivity, unregister } = useDataContext();
+    const { activities, registerForActivity, unregister, refreshActivities } = useDataContext();
+    const [refreshing, setRefreshing] = useState(false);
 
     const [search, setSearch] = useState('');
     const [filterType, setFilterType] = useState('all');
@@ -15,6 +16,13 @@ const EventBrowser = () => {
     const [sortBy, setSortBy] = useState('date');
 
     const today = new Date().toISOString().split('T')[0];
+
+    const handleRefresh = async () => {
+        setRefreshing(true);
+        await refreshActivities();
+        setRefreshing(false);
+        toast.success('Event list updated');
+    };
 
     const filtered = useMemo(() => {
         let list = [...activities];
@@ -47,9 +55,19 @@ const EventBrowser = () => {
 
     return (
         <div className="animate-slide-up">
-            <div style={{ marginBottom: '1.5rem' }}>
-                <h1 style={{ fontSize: '1.6rem', fontWeight: 800, margin: 0 }}>Browse Events</h1>
-                <p style={{ color: 'var(--text-muted)', margin: '0.25rem 0 0' }}>Discover and register for upcoming activities</p>
+            <div style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                    <h1 style={{ fontSize: '1.6rem', fontWeight: 800, margin: 0 }}>Browse Events</h1>
+                    <p style={{ color: 'var(--text-muted)', margin: '0.25rem 0 0' }}>Discover and register for upcoming activities</p>
+                </div>
+                <button
+                    className={`btn btn-ghost btn-icon ${refreshing ? 'spin' : ''}`}
+                    onClick={handleRefresh}
+                    disabled={refreshing}
+                    title="Refresh events"
+                >
+                    <RotateCw size={20} />
+                </button>
             </div>
 
             {/* Filters */}
@@ -92,7 +110,7 @@ const EventBrowser = () => {
                                     <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '0.5rem' }}>
                                         <div>
                                             <div style={{ display: 'flex', gap: '0.4rem', marginBottom: '0.4rem', flexWrap: 'wrap' }}>
-                                                <span className={`event-type-tag event-type-${ev.type}`}>{ev.type}</span>
+                                                <span className={`event - type - tag event - type - ${ev.type} `}>{ev.type}</span>
                                                 {ev.attendanceLocked && <span className="badge badge-success" style={{ fontSize: '0.7rem' }}><CheckCircle size={10} /> Finalized</span>}
                                                 {isRegistered && !ev.attendanceLocked && <span className="badge badge-primary" style={{ fontSize: '0.7rem' }}>✓ Registered</span>}
                                                 {myReg?.attended && <span className="badge badge-success" style={{ fontSize: '0.7rem' }}>✅ Attended</span>}
