@@ -10,9 +10,8 @@
             "destination": "/student-activity/dist/assets/$1"
         },
         {
-            "source": "/((?!api).*\\.[^/]+)$",
-            "destination": "/student-activity/dist/$1",
-            "check": true
+            "source": "/vite.svg",
+            "destination": "/student-activity/dist/vite.svg"
         },
         {
             "source": "/(.*)",
