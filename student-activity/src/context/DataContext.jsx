@@ -56,7 +56,7 @@ export const DataProvider = ({ children }) => {
         // Optimistic update
         let updatedActivity = null;
         setActivitiesState(prev => prev.map(a => {
-            if (a.id === id) {
+            if (String(a.id) === String(id)) {
                 updatedActivity = { ...a, ...updates };
                 return updatedActivity;
             }
@@ -75,7 +75,7 @@ export const DataProvider = ({ children }) => {
 
     const removeActivity = useCallback(async (id) => {
         // Optimistic update
-        setActivitiesState(prev => prev.filter(a => a.id !== id));
+        setActivitiesState(prev => prev.filter(a => String(a.id) !== String(id)));
 
         try {
             await deleteActivity(id);

@@ -90,7 +90,7 @@ export const updateActivity = async (id, updates) => {
 export const deleteActivity = async (id) => {
     // 1. Update localStorage cache
     const current = storage.get('activities', []);
-    storage.set('activities', current.filter(a => a.id !== id));
+    storage.set('activities', current.filter(a => String(a.id) !== String(id)));
 
     try {
         const res = await fetch(`/api/activities/${id}`, { method: 'DELETE' });
