@@ -8,65 +8,17 @@ import EmptyState from '../../components/EmptyState.jsx';
 
 const COLORS = ['#6366f1', '#06b6d4', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
 
+const CustomTooltip = ({ active, payload, label }) => {
+    if (!active || !payload?.length) return null;
+    return (
+        <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8, padding: '0.75rem', fontSize: '0.85rem', boxShadow: 'var(--shadow)' }}>
+            <p style={{ fontWeight: 600, marginBottom: '0.25rem' }}>{label}</p>
+            {payload.map(p => <p key={p.name} style={{ color: p.color }}>{p.name}: {p.value}{p.name === 'pct' ? '%' : ''}</p>)}
+        </div>
+    );
+};
+
 const AnalyticsDashboard = ({ isInternal = false }) => {
-    const { activities, users } = useDataContext();
-
-    const eventsByMonth = useMemo(() => {
-        const map = {};
-        activities.forEach(a => {
-            const m = a.date.slice(0, 7);
-            if (!map[m]) map[m] = 0;
-            map[m]++;
-        });
-        return Object.entries(map).sort(([a], [b]) => a.localeCompare(b)).map(([month, count]) => ({
-            month: new Date(month + '-01').toLocaleDateString('en-US', { month: 'short', year: '2-digit' }),
-            count,
-        }));
-    }, [activities]);
-
-    const attendanceData = useMemo(() => {
-        return activities.filter(a => a.attendanceLocked && a.registrations.length > 0).map(a => {
-            const present = a.registrations.filter(r => r.attended).length;
-            return {
-                name: a.name.length > 20 ? a.name.slice(0, 18) + '…' : a.name,
-                pct: Math.round((present / a.registrations.length) * 100),
-                present,
-                total: a.registrations.length,
-            };
-        });
-    }, [activities]);
-
-    const pointsData = useMemo(() => {
-        return activities.filter(a => a.attendanceLocked).map(a => ({
-            name: a.name.length > 16 ? a.name.slice(0, 14) + '…' : a.name,
-            points: a.registrations.filter(r => r.attended).length * a.defaultPoints,
-        }));
-    }, [activities]);
-
-    const typeData = useMemo(() => {
-        const m = { event: 0, sport: 0, club: 0 };
-        activities.forEach(a => { m[a.type] = (m[a.type] || 0) + 1; });
-        return Object.entries(m).filter(([, v]) => v > 0).map(([name, value]) => ({ name: name.charAt(0).toUpperCase() + name.slice(1), value }));
-    }, [activities]);
-
-    const kpis = useMemo(() => {
-        const locked = activities.filter(a => a.attendanceLocked);
-        const totalAttended = locked.reduce((s, a) => s + a.registrations.filter(r => r.attended).length, 0);
-        const totalRegistered = locked.reduce((s, a) => s + a.registrations.length, 0);
-        const totalPoints = locked.reduce((s, a) => s + a.registrations.filter(r => r.attended).length * a.defaultPoints, 0);
-        const avgPct = totalRegistered > 0 ? Math.round((totalAttended / totalRegistered) * 100) : 0;
-        return { totalAttended, totalPoints, avgPct, locked: locked.length };
-    }, [activities]);
-
-    const CustomTooltip = ({ active, payload, label }) => {
-        if (!active || !payload?.length) return null;
-        return (
-            <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8, padding: '0.75rem', fontSize: '0.85rem', boxShadow: 'var(--shadow)' }}>
-                <p style={{ fontWeight: 600, marginBottom: '0.25rem' }}>{label}</p>
-                {payload.map(p => <p key={p.name} style={{ color: p.color }}>{p.name}: {p.value}{p.name === 'pct' ? '%' : ''}</p>)}
-            </div>
-        );
-    };
 
     if (activities.length === 0) {
         return <div className={isInternal ? "" : "page-content"}><EmptyState icon="📊" title="No data yet" message="Create some events to see analytics." /></div>;
