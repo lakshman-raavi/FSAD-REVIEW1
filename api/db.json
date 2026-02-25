@@ -40,7 +40,7 @@
     },
     {
       "id": "1771907004671_beho56u",
-      "name": "xx",
+      "name": "Volleyball",
       "type": "sport",
       "date": "2026-02-26",
       "time": "09:57",
@@ -61,6 +61,15 @@
       "password": "student123",
       "role": "student",
       "joinedAt": "2026-01-01"
+    },
+    {
+      "id": "1771990466988_a8bvsa0",
+      "studentId": "123654",
+      "name": "Lucky",
+      "email": "2400031579@kluniversity.in",
+      "password": "123456",
+      "role": "student",
+      "joinedAt": "2026-02-25"
     }
   ]
 }

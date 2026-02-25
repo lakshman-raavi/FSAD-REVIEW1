@@ -133,7 +133,6 @@ const LoginPage = () => {
 
     const handleRegister = async (e) => {
         e.preventDefault();
-        if (regForm.password !== regForm.confirmPassword) { toast.error('Passwords do not match'); return; }
         if (regForm.password.length < 6) { toast.error('Password must be at least 6 characters'); return; }
         if (!regCaptchaRef.current?.validate()) {
             toast.error('Invalid CAPTCHA');
